@@ -1,0 +1,51 @@
+pipeline{
+    agent any
+    
+    environment {
+        IMAGE_NAME = "tienda-api-vyv"
+        DOCKERHUB_NAMESPACE = "charly3012"
+        BUILD_ID = "${env.BUILD_NUMBER}"
+    }
+    
+    stages{
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build and tag docker image'){
+            steps{
+                sh "docker build -t ${IMAGE_NAME}:${BUILD_ID} ."
+                sh "docker tag ${IMAGE_NAME}:${BUILD_ID} ${DOCKERHUB_NAMESPACE}/${IMAGE_NAME}:b${BUILD_ID}"
+                sh "docker tag ${IMAGE_NAME}:${BUILD_ID} ${DOCKERHUB_NAMESPACE}/${IMAGE_NAME}:latest"
+            }
+        }
+        
+        stage('Push to DockerHub'){
+            steps{
+                withCredentials([usernamePassword(
+                credentialsId: 'dockerhub-credentials-ch',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push ${DOCKERHUB_NAMESPACE}/${IMAGE_NAME}:b${BUILD_ID}
+                        docker push ${DOCKERHUB_NAMESPACE}/${IMAGE_NAME}:latest
+                    '''
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "Build and Docker push successful!"
+        }
+        failure {
+            echo "Build failed."
+        }
+    }
+
+}

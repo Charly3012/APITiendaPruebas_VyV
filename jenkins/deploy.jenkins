@@ -1,0 +1,36 @@
+pipeline{
+    agent any
+
+    environment {
+        REMOTE_HOST = 'Backend-uady'
+        IMAGE_NAME = 'charly3012/tienda-api-vyv:latest'
+        CONTAINER_NAME = 'tienda-api-vyv'
+        PORT_MAPPING = '-p 8333:3000'
+    }
+    
+    stages{
+        stage('SSH deploy'){
+            steps{    
+                sh """
+                    
+
+                    ssh ${REMOTE_HOST} << EOF
+                    
+                    docker stop ${CONTAINER_NAME} 2>/dev/null || echo "old container did not exist runing"
+                    docker rm ${CONTAINER_NAME} 2>/dev/null || echo "old container did not exist"
+
+                    docker pull ${IMAGE_NAME} || { echo "Error doing pull"; exit 1; }
+
+                    docker run -d \\
+                        --name ${CONTAINER_NAME} \\
+                        ${PORT_MAPPING} \\
+                        ${IMAGE_NAME} || { echo "Error runing new container"; exit 1; }
+                    
+                    exit
+                    EOF
+                """
+            }
+        }
+    }
+
+}
