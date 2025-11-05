@@ -1,6 +1,12 @@
 pipeline{
     agent any
 
+    parameters {
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Rama para desplegar')
+    }
+
+    triggers { }
+
     environment {
         REMOTE_HOST = 'Backend-uady'
         IMAGE_NAME = 'charly3012/tienda-api-vyv:latest'
@@ -10,7 +16,12 @@ pipeline{
     
     stages{
         stage('SSH deploy'){
+
+            when {
+                expression { params.GIT_BRANCH == 'qa' || params.GIT_BRANCH == 'main' }
+            }
             steps{    
+                // --- SIN CAMBIOS --- (Tu lógica original de SSH)
                 sh """
                     
 
@@ -32,5 +43,4 @@ pipeline{
             }
         }
     }
-
 }
