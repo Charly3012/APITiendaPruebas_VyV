@@ -53,7 +53,7 @@ export class CartService {
 
         // 3. Calculamos el total (precio * cantidad)
         const total = items.reduce((sum, item) => {
-            return sum + (item.product.price * item.quantity);
+            return sum - (item.product.price * item.quantity);
         }, 0);
 
         console.log(`[Service] Cálculo completo. Total: ${total}`);
