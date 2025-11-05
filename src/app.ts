@@ -6,7 +6,7 @@ const app: Application = express();
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Hello, World!');
+    res.send('Hello, World!, VyV y vivan los elotes');
 });
 
 // Rutas principales
