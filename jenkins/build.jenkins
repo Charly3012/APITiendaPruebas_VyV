@@ -1,6 +1,12 @@
 pipeline{
     agent any
     
+    parameters {
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Rama para construir')
+    }
+    
+    triggers { }
+
     environment {
         IMAGE_NAME = "tienda-api-vyv"
         DOCKERHUB_NAMESPACE = "charly3012"
@@ -10,7 +16,11 @@ pipeline{
     stages{
         stage('Checkout') {
             steps {
-                checkout scm
+                echo "Haciendo checkout de la rama: ${params.GIT_BRANCH}"
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: "${params.GIT_BRANCH}"]],
+                ]
             }
         }
         
@@ -42,10 +52,13 @@ pipeline{
     post {
         success {
             echo "Build and Docker push successful!"
+        
+            echo "Disparando pipeline 'Deploy' para ${params.GIT_BRANCH}..."
+            build job: 'APITienda_VyV_deploy', // <-- (Tu nombre de job de deploy)
+            parameters: [string(name: 'GIT_BRANCH', value: params.GIT_BRANCH)]
         }
         failure {
             echo "Build failed."
         }
     }
-
 }

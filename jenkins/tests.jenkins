@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'node:18-alpine'
+            image 'node:22-alpine'
         }
     }
 
@@ -30,12 +30,25 @@ pipeline {
     }
     
     post {
-        success {
-            echo '¡Pruebas (Q3) Pasadas! El pipeline está en VERDE.'
+        success {        
+            script {
+                echo "Pruebas pasadas en la rama: ${env.BRANCH_NAME}"
+        
+                if (env.BRANCH_NAME == 'qa' || env.BRANCH_NAME == 'main') {
+                    echo "Rama es '${env.BRANCH_NAME}'. Disparando pipeline 'Build'..."
+                    
+                    build job: 'APITienda_VyV_build', 
+                    parameters: [string(name: 'GIT_BRANCH', value: env.BRANCH_NAME)]
+                        
+                } else {
+                    echo "Rama es 'develop'. Fin del proceso."
+                }
+            }
         }
         failure {
             echo '¡FAIL FAST! Pruebas (Q3) fallaron. Build detenido.'
             // Las notificaciónes irian aquí, si tan solo las tuvieramos
         }
+        
     }
 }
